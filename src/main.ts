@@ -13,5 +13,3 @@ const vue = new Vue({
 });
 
 vue.$mount('#app');
-
-

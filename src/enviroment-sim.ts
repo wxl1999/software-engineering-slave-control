@@ -1,40 +1,61 @@
 import { Settings, Event  } from './model';
 import eventBus from './main';
 
-/** Every Second */
-const scale = 10000;
 
 class EnviromentSim {
-    enviromentTempareture : number = 16;
+    defaultTemperature : number = 26;
+    enviromentTemperature : number = this.defaultTemperature;
     settings : Settings | null = null;
 
     setSettings = (settings: Settings) => {
-        this.settings = settings;
+        this.settings = settings
     }
 
     simulateEnviroment = (ms:number) => {
-        if(this.settings) {
-            if(this.settings.on) {
-                let direction = 0;
-                if(this.settings.tempareture > this.enviromentTempareture) {
-                    direction = 1;
-                }
-                if(this.settings.tempareture < this.enviromentTempareture) {
-                    direction = -1;
-                }
-        
-                this.enviromentTempareture += direction * ms * this.settings.speed * this.settings.speed / scale;
+        let scale;
+        if(this.settings && this.settings.on && this.settings.needWind && this.settings.speed != 0) {
+            let direction = 0;
+            if(this.settings.temperature > this.enviromentTemperature) {
+                direction = 1;
+            }
+            else if(this.settings.temperature < this.enviromentTemperature) {
+                direction = -1;
+            }
+            
+            if (this.settings.speed == 1) {
+                scale = 25;
+            }
+            else if (this.settings.speed == 2) {
+                scale = 20;
+            }
+            else if (this.settings.speed == 3) {
+                scale = 15;
             }
             else {
-                this.enviromentTempareture -= 1;
-            }
+                console.log('speed is zero');
+                return;
+            };
+            
+            this.enviromentTemperature += direction * ms / 1000 / scale;
         }
-    
-        eventBus.$emit(Event.onEnviromentUpdate, this.enviromentTempareture);
+        else {
+            scale = 10;
+            let direction = 0;
+            if(this.defaultTemperature > this.enviromentTemperature) {
+                direction = 1;
+            }
+            else if(this.defaultTemperature < this.enviromentTemperature) {
+                direction = -1;
+            }
+            
+            this.enviromentTemperature += direction * ms / 1000 / scale;
+        }
+
+        eventBus.$emit(Event.onEnviromentUpdate, this.enviromentTemperature);
     }
 
-    getEnviromentTempareture = () : number => {
-        return this.enviromentTempareture;
+    getEnviromentTemperature = () : number => {
+        return this.enviromentTemperature;
     }
 }
 
@@ -49,7 +70,7 @@ export default enviromentSim;
 
 
 
-// let enviromentTempareture : number = 16;
+// let enviromentTemperature : number = 16;
 // let settings : Settings | null = null;
 
 // export const setSettings = (new_settings: Settings) => {
@@ -59,20 +80,20 @@ export default enviromentSim;
 // const simulateEnviroment = (ms:number) => {
 //     if(settings) {
 //         let direction = 0;
-//         if(settings.tempareture > enviromentTempareture) {
+//         if(settings.temperature > enviromentTemperature) {
 //             direction = 1;
 //         }
-//         if(settings.tempareture < enviromentTempareture) {
+//         if(settings.temperature < enviromentTemperature) {
 //             direction = -1;
 //         }
 
-//         enviromentTempareture = direction * ms * settings.speed / scale;
+//         enviromentTemperature = direction * ms * settings.speed / scale;
 //     }
 
-//     vue.$emit("enviroment-update", enviromentTempareture);
+//     vue.$emit("enviroment-update", enviromentTemperature);
 // }
 
-// export const getEnviromentTempareture = () : number => {
-//     return enviromentTempareture;
+// export const getEnviromentTemperature = () : number => {
+//     return enviromentTemperature;
 // }
 

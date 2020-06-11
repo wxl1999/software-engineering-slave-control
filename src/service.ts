@@ -1,23 +1,22 @@
 import { Stats, Settings, MasterSettings, LoginInfo, Event  } from './model';
 import eventBus from './main';
+import axios from 'axios'
+axios.defaults.baseURL = 'https://httpbin.org/'
 
 /**
  * @param message {string} when error, provide a hint error message
  * @param data {T} when success, provide a data
  */
-export interface ServiceResponse<T> {
-    data?: T;
+export interface ServiceResponse {
+    data?: object;
     message? : string;
 }
 
 
 class Service {
-    
-    
-
     mockStats = {
         total_fee: 5.5,
-        fee: 2.1
+        total_energy: 11,
     }
 
     /**
@@ -26,17 +25,34 @@ class Service {
      * - Success: Invoke an onStatsUpdate Global event
      * - Error: Do nothing
      */
-    getStats = async ()  : Promise< ServiceResponse<Stats> > => {
-        let stats:Stats = this.mockStats;
-        this.mockStats.fee += 0.01;
-        this.mockStats.total_fee += 0.01;
+    // getStats = async ()  : Promise< ServiceResponse > => {
+    //     let stats: Stats = this.mockStats;
+    //     this.mockStats.total_energy += 0.02;
+    //     this.mockStats.total_fee += 0.01;
         
-        eventBus.$emit(Event.onStatsUpdate, stats);
+    //     eventBus.$emit(Event.onStatsUpdate, stats);
     
+    //     return Promise.resolve({
+    //         data: {
+    //             stats,
+    //             metric_delay: 1000
+    //         }
+    //     })
+    // };
+
+    getStats = async () => {
+        const res = await axios.get('')
+        // return res
+        let stats: Stats = this.mockStats;
+        this.mockStats.total_energy += 0.02;
+        this.mockStats.total_fee += 0.01;
         return Promise.resolve({
-            data: stats
+            data: {
+                stats,
+                metric_delay: 1000
+            }
         })
-    };
+    }
 
     /**
      * Get Master Air Condition Settings
@@ -44,14 +60,33 @@ class Service {
      * - Error: Do nothing
      * - According to doc, this should invoke in a period
      */
-    getMasterSettings = async (): Promise< ServiceResponse<MasterSettings> > => {
-        return Promise.resolve< ServiceResponse<MasterSettings> >({
+    // getMasterSettings = async (): Promise< ServiceResponse<MasterSettings> > => {
+    //     return Promise.resolve< ServiceResponse<MasterSettings> >({
+    //         data: {
+    //             mode: "cold",
+    //             min_temperature: 16,
+    //             max_temperature: 26
+    //         }
+    //     });
+    // }
+    getMasterSettings = async () => {
+        const res = await axios.get('get')
+        // return res
+        return Promise.resolve({
             data: {
-                mode: "cold",
-                min_tempareture: 16,
-                max_tempareture: 26
+                masterSettings: {
+                    mode: "cold",
+                    min_temperature: 18,
+                    max_temperature: 25
+                },
+                settings: {
+                    on: true,
+                    needWind: true,
+                    temperature: 25,
+                    speed: 2
+                }
             }
-        });
+        })
     }
     
     /**
@@ -59,20 +94,35 @@ class Service {
      * - Success: return null
      * - Error: return error message
      */
-    setSettings = async (settings: Settings) : Promise< ServiceResponse<Settings> > => {
-        console.log(settings);
-        if(settings.speed == 5) {
-            return Promise.resolve< ServiceResponse<Settings> >({
+    // setSettings = async (settings: Settings) : Promise< ServiceResponse > => {
+    //     if(!settings.speed) {
+    //         return Promise.resolve< ServiceResponse >({
+    //             message: "设置失败！"
+    //         });
+    //     }
+    //     else {
+    //         return Promise.resolve< ServiceResponse >({
+    //             data: settings
+    //         });
+    //     }
+    // };
+
+    setSettings = async (settings: Settings) => {
+        const res = axios.post('', {
+            settings
+        })        
+        // return res
+        if(!settings.speed) {
+            return Promise.resolve< ServiceResponse >({
                 message: "设置失败！"
             });
         }
         else {
-            return Promise.resolve< ServiceResponse<Settings> >({
+            return Promise.resolve< ServiceResponse >({
                 data: settings
             });
         }
-        
-    };
+    }
 
 
     /**
@@ -80,19 +130,26 @@ class Service {
      * - Success: return null
      * - Error: return error message
      */
-    login = async (loginInfo? : LoginInfo) : Promise< ServiceResponse<LoginInfo> > => {
-        return Promise.resolve< ServiceResponse<LoginInfo> >({
+    // login = async (loginInfo? : LoginInfo) : Promise< ServiceResponse > => {
+    //     return Promise.resolve< ServiceResponse >({
+    //     });
+    // }
+    login = async (loginInfo?: LoginInfo) => {
+        const res = axios.post('', {
+            loginInfo
+        })
+        // return res;
+        return Promise.resolve< ServiceResponse >({
         });
     }
-    
 }
 
 const service = new Service();
 
-setInterval(() => {
+// setInterval(() => {
     
-    service.getStats();
-}, 1000)
+//     service.getStats();
+// }, 1000)
 
 export default service;
 
@@ -129,8 +186,8 @@ export default service;
 //     return Promise.resolve< ServiceResponse<MasterSettings> >({
 //         data: {
 //             mode: "cold",
-//             min_tempareture: 16,
-//             max_tempareture: 26
+//             min_temperature: 16,
+//             max_temperature: 26
 //         }
 //     });
 // }
