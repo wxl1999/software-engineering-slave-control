@@ -6,7 +6,7 @@ export enum Event {
 /**
  * @member on {boolean} 空调是否打开
  * @member needWind {boolean} 是否需要送风 
- * @member temp {number} 空调设定温度
+ * @member temperature {number} 空调设定温度
  * @member speed {number} 空调设定风速 1-3
  */
 export interface Settings {
@@ -22,30 +22,34 @@ export interface Settings {
  */
 export interface MasterSettings {
     mode?: "cold" | "warm",
+    default_temperature?: number;
     min_temperature?: number,
-    max_temperature?: number
+    max_temperature?: number,
+    metric_delay?: number;
+    update_delay?: number;
 }
 
 /**
- * @member total_fee {number} 入住以来累计价格 
- * @member fee {number} 当次开机价格
- * @member total_energy {number} 累计消耗能量
- * @member metric_delay {number} 发送频率
+ * @member cost {number} 入住以来累计价格 
+ * @member energy {number} 累计消耗能量
  */
 export interface Stats {
-    total_fee?: number;
-    // fee: number;
-    total_energy?: number;
+    cost?: number;
+    energy?: number;
+}
+
+export interface Metric {
+    mode?: "cold" | "warm",
+    fan_speed?: 0 | 1 | 2 | 3;
+    temperature?: number;
 }
 
 
 /**
- * @member roomId {string} 房间信息
- * @member phone {number} 住客手机号信息（认证用）
- * @member Id {string} 住客身份证（认证用）
+ * @member room_id {string} 房间信息
+ * @member id {string} 住客身份证（认证用）
  */
 export interface LoginInfo {
-    roomId: string;
-    phone?: string;
-    Id?: string;
+    room_id: string;
+    id: string;
 }

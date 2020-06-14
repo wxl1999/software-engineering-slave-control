@@ -1,7 +1,5 @@
-import { Stats, Settings, MasterSettings, LoginInfo, Event  } from './model';
-import eventBus from './main';
+import { Stats, Settings, MasterSettings, LoginInfo, Event } from './model';
 import axios from 'axios'
-axios.defaults.baseURL = 'https://httpbin.org/'
 
 /**
  * @param message {string} when error, provide a hint error message
@@ -9,14 +7,44 @@ axios.defaults.baseURL = 'https://httpbin.org/'
  */
 export interface ServiceResponse {
     data?: object;
-    message? : string;
+    message?: string;
+}
+
+/**
+ * @param code {int}
+ */
+export interface Response {
+    code: number;
+}
+
+/**
+ * @param token {string}
+ * @param user_id {number}
+ * @param room_id {number}
+ * @param default_temperature {number}
+ * @param metric_delay {number}
+ * @param update_delay {number}
+ * @param mode {string}
+ */
+export interface ConnectionResponse extends Response {
+    token: string;
+    user_id: number;
+    room_id: number;
+    default_temperature: number;
+    metric_delay: number;
+    update_delay: number;
+    mode: string;
+    cool_min: number;
+    cool_max: number;
+    warm_min: number;
+    warm_max: number;
 }
 
 
 class Service {
-    mockStats = {
-        total_fee: 5.5,
-        total_energy: 11,
+    mockStats: Stats = {
+        cost: 5.5,
+        energy: 11,
     }
 
     /**
@@ -29,9 +57,9 @@ class Service {
     //     let stats: Stats = this.mockStats;
     //     this.mockStats.total_energy += 0.02;
     //     this.mockStats.total_fee += 0.01;
-        
+
     //     eventBus.$emit(Event.onStatsUpdate, stats);
-    
+
     //     return Promise.resolve({
     //         data: {
     //             stats,
@@ -41,54 +69,23 @@ class Service {
     // };
 
     getStats = async () => {
-        const res = await axios.get('')
+        // const res = await axios.get('/v1/statistics')
         // return res
         let stats: Stats = this.mockStats;
-        this.mockStats.total_energy += 0.02;
-        this.mockStats.total_fee += 0.01;
+        this.mockStats.energy += 0.02;
+        this.mockStats.cost += 0.01;
         return Promise.resolve({
-            data: {
-                stats,
-                metric_delay: 1000
-            }
+            energy: stats.energy,
+            cost: stats.cost
         })
     }
 
-    /**
-     * Get Master Air Condition Settings
-     * - Success: Invoke an onStatsUpdate Global event
-     * - Error: Do nothing
-     * - According to doc, this should invoke in a period
-     */
-    // getMasterSettings = async (): Promise< ServiceResponse<MasterSettings> > => {
-    //     return Promise.resolve< ServiceResponse<MasterSettings> >({
-    //         data: {
-    //             mode: "cold",
-    //             min_temperature: 16,
-    //             max_temperature: 26
-    //         }
-    //     });
-    // }
-    getMasterSettings = async () => {
-        const res = await axios.get('get')
-        // return res
-        return Promise.resolve({
-            data: {
-                masterSettings: {
-                    mode: "cold",
-                    min_temperature: 18,
-                    max_temperature: 25
-                },
-                settings: {
-                    on: true,
-                    needWind: true,
-                    temperature: 25,
-                    speed: 2
-                }
-            }
-        })
+    sendMetric = async(metric: Metric) => {
+        // const res = await axios.post('/v1/metrics', { metric })
+        // return res;
+        return Promise.resolve({});
     }
-    
+
     /**
      * Request Server to Permit Change Settings
      * - Success: return null
@@ -107,21 +104,31 @@ class Service {
     //     }
     // };
 
-    setSettings = async (settings: Settings) => {
-        const res = axios.post('', {
-            settings
-        })        
-        // return res
-        if(!settings.speed) {
-            return Promise.resolve< ServiceResponse >({
-                message: "设置失败！"
-            });
-        }
-        else {
-            return Promise.resolve< ServiceResponse >({
-                data: settings
-            });
-        }
+    // setSettings = async (settings: Settings) => {
+    //     const res = axios.post('', {
+    //         settings
+    //     })
+    //     // return res
+    //     if (!settings.speed) {
+    //         return Promise.resolve<ServiceResponse>({
+    //             message: "设置失败！"
+    //         });
+    //     }
+    //     else {
+    //         return Promise.resolve<ServiceResponse>({
+    //             data: settings
+    //         });
+    //     }
+    // }
+    startControl = async (mode, speed) => {
+        // const res = axios.post('/v1/state_control/start', {mode: mode, speed: speed})
+        // return res;
+        return Promise.resolve({});
+    }
+    stopControl = async() => {
+        // const res = axios.post('/v1/state_control/stop', {})
+        // return res;
+        return Promise.resolve({});
     }
 
 
@@ -134,12 +141,22 @@ class Service {
     //     return Promise.resolve< ServiceResponse >({
     //     });
     // }
-    login = async (loginInfo?: LoginInfo) => {
-        const res = axios.post('', {
-            loginInfo
-        })
+    login = async (loginInfo: LoginInfo): Promise<ConnectionResponse> => {
+        // const res = axios.post('/v1/connect', { loginInfo })
         // return res;
-        return Promise.resolve< ServiceResponse >({
+        return Promise.resolve<ConnectionResponse>({
+            code: 200,
+            token: '123',
+            user_id: 123,
+            room_id: 1234,
+            default_temperature: 25.0,
+            metric_delay: 1000,
+            update_delay: 1000,
+            mode: 'cold',
+            cool_min: 18,
+            cool_max: 25,
+            warm_min: 25,
+            warm_max: 30,
         });
     }
 }
@@ -147,7 +164,7 @@ class Service {
 const service = new Service();
 
 // setInterval(() => {
-    
+
 //     service.getStats();
 // }, 1000)
 
